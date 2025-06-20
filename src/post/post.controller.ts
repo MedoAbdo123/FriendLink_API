@@ -74,7 +74,7 @@ export class PostController {
   }
 
   @Get(':userId')
-  async getPostByUsernameOrUserId(@Param('userId') userId: string){
-    return await this.postService.findPostByUsernameOrUserId( userId)
+  async getPostByUsernameOrUserId(@Param('userId') userId: string) {
+    return await this.postService.findPostByUsernameOrUserId(userId);
   }
 }

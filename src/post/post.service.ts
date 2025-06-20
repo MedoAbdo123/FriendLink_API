@@ -86,8 +86,9 @@ export class PostService {
   }
 
   async getPosts() {
-    const posts =
-      await this.PostModel.find().lean<PostDocumentWithTimestamps[]>();
+    const posts = await this.PostModel.find()
+      .populate('user', 'name username avatar')
+      .lean<PostDocumentWithTimestamps[]>();
 
     const postsWithTimeAgo = await Promise.all(
       posts.map(async (post) => {
@@ -135,9 +136,8 @@ export class PostService {
   async findPostByUsernameOrUserId(userId: string) {
     const postUser = await this.PostModel.findOne({
       $or: [{ username: userId }, { user: userId }],
-    }).populate('user', 'name username avatar')
+    }).populate('user', 'name username avatar');
 
-    return postUser
+    return postUser;
   }
-
 }

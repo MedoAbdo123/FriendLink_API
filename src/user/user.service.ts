@@ -3,7 +3,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user.schema';
@@ -53,7 +52,7 @@ export class UserService {
 
     const user = await this.UserModel.create({
       name,
-      username,
+      username: "@" + username,
       email,
       avatar: avatarUrl,
       password: hashPassword,
