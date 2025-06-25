@@ -93,7 +93,7 @@ export class UserService {
 
     if (!user) {
       throw new HttpException(
-        'There is an error in the email or password.',
+        'The email/username or password you entered is incorrect.',
         HttpStatus.NOT_FOUND,
       );
     }

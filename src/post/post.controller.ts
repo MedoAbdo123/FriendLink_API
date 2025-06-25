@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -58,8 +59,8 @@ export class PostController {
   }
 
   @Get('allPosts')
-  async getPosts() {
-    return await this.postService.getPosts();
+  async getAllPosts(@Query('skip') skip = '0', @Query('limit') limit = '10') {
+    return this.postService.getPosts(parseInt(skip), parseInt(limit));
   }
 
   @Delete('delete/:postId')

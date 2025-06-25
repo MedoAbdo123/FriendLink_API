@@ -85,34 +85,38 @@ export class PostService {
     return { message: 'Deleted post successfully' };
   }
 
-  async getPosts() {
-    const posts = await this.PostModel.find()
-      .populate('user', 'name username avatar')
-      .lean<PostDocumentWithTimestamps[]>();
+async getPosts(skip = 0, limit = 10) {
+  const posts = await this.PostModel.find()
+    .sort({ createdAt: -1 }) // عشان يرتب من الأحدث
+    .skip(skip)
+    .limit(limit)
+    .populate('user', 'name username avatar')
+    .lean<PostDocumentWithTimestamps[]>();
 
-    const postsWithTimeAgo = await Promise.all(
-      posts.map(async (post) => {
-        const existingComments = await this.CommentModel.find({
-          _id: { $in: post.comments },
-        }).select('_id');
+  const postsWithTimeAgo = await Promise.all(
+    posts.map(async (post) => {
+      const existingComments = await this.CommentModel.find({
+        _id: { $in: post.comments },
+      }).select('_id');
 
-        const existingCommentIds = existingComments.map((comment) =>
-          comment._id.toString(),
-        );
+      const existingCommentIds = existingComments.map((c) =>
+        c._id.toString(),
+      );
 
-        return {
-          ...post,
-          timeAgo: dayjs(post.createdAt).fromNow(),
-          commentsNumber: existingCommentIds.length,
-          comments: existingCommentIds,
-        };
-      }),
-    );
+      return {
+        ...post,
+        timeAgo: dayjs(post.createdAt).fromNow(),
+        commentsNumber: existingCommentIds.length,
+        comments: existingCommentIds,
+      };
+    }),
+  );
 
-    return {
-      data: postsWithTimeAgo,
-    };
-  }
+  return {
+    data: postsWithTimeAgo,
+  };
+}
+
 
   async likeAndDisLike(postId: string, user: any) {
     const post = await this.PostModel.findById(postId);

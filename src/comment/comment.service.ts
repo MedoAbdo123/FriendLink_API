@@ -25,18 +25,21 @@ export class CommentService {
       user: user.id,
       post: postId,
     });
-
     await comment.save();
 
     await this.PostModel.findByIdAndUpdate(postId, {
       $push: { comments: comment._id },
     });
 
+    const populatedComment = await this.CommentModel.findById(
+      comment._id,
+    ).populate('user', 'name avatar');
     return {
       message: 'Comment added successfully',
-      comment,
+      comment: populatedComment,
     };
   }
+  z;
 
   async getComments(postId: string) {
     if (!Types.ObjectId.isValid(postId)) {
@@ -45,6 +48,7 @@ export class CommentService {
     const postWithComments = await this.PostModel.findById(postId)
       .populate({
         path: 'comments',
+        options: { sort: { createdAt: -1 } },
         populate: {
           path: 'user',
           select: 'name username avatar',
@@ -76,9 +80,9 @@ export class CommentService {
 
     const newComment = await this.CommentModel.findByIdAndUpdate(
       commentId,
-      updateCommentDto,
+      { ...updateCommentDto, edited: 'edited' },
       { new: true },
-    );
+    ).populate('user', 'name avatar')
 
     return {
       comment: newComment,

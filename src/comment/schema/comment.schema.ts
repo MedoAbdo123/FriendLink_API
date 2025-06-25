@@ -6,10 +6,14 @@ export class Comment {
   @Prop()
   content: string;
 
+  @Prop({type: String, default: ""})
+  edited: string
+
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   user: Types.ObjectId;
 
   @Prop({ required: true, type: Types.ObjectId, ref: 'Post' })
   post: Types.ObjectId;
+
 }
 export const CommentSchema = SchemaFactory.createForClass(Comment);
