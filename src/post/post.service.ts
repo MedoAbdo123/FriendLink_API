@@ -5,6 +5,8 @@ import { Model, Types } from 'mongoose';
 import { PostDto } from './dto/post.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { Comment } from '../comment/schema/comment.schema';
+import { executionAsyncResource } from 'async_hooks';
+import { User } from 'src/user/schema/user.schema';
 const dayjs = require('dayjs');
 const relativeTime = require('dayjs/plugin/relativeTime');
 const updateLocale = require('dayjs/plugin/updateLocale');
@@ -37,6 +39,7 @@ export class PostService {
   constructor(
     @InjectModel(Post.name) private PostModel: Model<Post>,
     @InjectModel(Comment.name) private CommentModel: Model<Comment>,
+    @InjectModel(User.name) private UserModel: Model<User>,
   ) {}
 
   async AddPost(postDto: PostDto, user: any) {
@@ -85,38 +88,70 @@ export class PostService {
     return { message: 'Deleted post successfully' };
   }
 
-async getPosts(skip = 0, limit = 10) {
-  const posts = await this.PostModel.find()
-    .sort({ createdAt: -1 }) // عشان يرتب من الأحدث
-    .skip(skip)
-    .limit(limit)
-    .populate('user', 'name username avatar')
-    .lean<PostDocumentWithTimestamps[]>();
+  async getPosts(skip = 0, limit = 10) {
+    const posts = await this.PostModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name username avatar')
+      .lean<PostDocumentWithTimestamps[]>();
 
-  const postsWithTimeAgo = await Promise.all(
-    posts.map(async (post) => {
-      const existingComments = await this.CommentModel.find({
-        _id: { $in: post.comments },
-      }).select('_id');
+    const postsWithTimeAgo = await Promise.all(
+      posts.map(async (post) => {
+        const existingComments = await this.CommentModel.find({
+          _id: { $in: post.comments },
+        }).select('_id');
 
-      const existingCommentIds = existingComments.map((c) =>
-        c._id.toString(),
-      );
+        const existingCommentIds = existingComments.map((c) =>
+          c._id.toString(),
+        );
 
-      return {
-        ...post,
-        timeAgo: dayjs(post.createdAt).fromNow(),
-        commentsNumber: existingCommentIds.length,
-        comments: existingCommentIds,
-      };
-    }),
-  );
+        return {
+          ...post,
+          timeAgo: dayjs(post.createdAt).fromNow(),
+          commentsNumber: existingCommentIds.length,
+          comments: existingCommentIds,
+        };
+      }),
+    );
 
-  return {
-    data: postsWithTimeAgo,
-  };
-}
+    return {
+      data: postsWithTimeAgo,
+    };
+  }
 
+  async findPostByUsernameOrUserId(userId: string) {
+    const postsUser = await this.PostModel.find({
+      $or: [{ username: userId }, { user: userId }],
+    })
+      .populate('user', 'name username avatar')
+      .lean<PostDocumentWithTimestamps[]>();
+
+    if(postsUser.length == 0) {
+      const userData = await this.UserModel.findOne({username: userId}).select("-password")
+      return userData
+    }
+
+    const postsWithCommentCount = await Promise.all(
+      postsUser.map(async (postUser) => {
+        const existingComments = await this.CommentModel.find({
+          _id: { $in: postUser.comments },
+        }).select('_id');
+
+        const existingCommentIds = existingComments.map((c) =>
+          c._id.toString(),
+        )
+
+        return {
+          ...postUser,
+          commentsNumber: existingCommentIds.length,
+          comments: existingCommentIds,
+        };
+      }),
+    );
+
+    return postsWithCommentCount;
+  }
 
   async likeAndDisLike(postId: string, user: any) {
     const post = await this.PostModel.findById(postId);
@@ -135,13 +170,5 @@ async getPosts(skip = 0, limit = 10) {
 
     await post.save();
     return post;
-  }
-
-  async findPostByUsernameOrUserId(userId: string) {
-    const postUser = await this.PostModel.findOne({
-      $or: [{ username: userId }, { user: userId }],
-    }).populate('user', 'name username avatar');
-
-    return postUser;
   }
 }

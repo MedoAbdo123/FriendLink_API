@@ -41,4 +41,22 @@ export class FriendController {
   async cancelTheRequest(@Param('requestId') requestId: string) {
     return await this.friendService.cancelTheRequest(requestId);
   }
+
+  @Get('myFriends')
+  @UseGuards(AuthGuard)
+  async getFriends(@Req() req) {
+    return await this.friendService.getFriends(req.user.id);
+  }
+
+  @Get('pending')
+  @UseGuards(AuthGuard)
+  async getRequestsPending(@Req() req) {
+    return this.friendService.getRequestsPending(req.user.id);
+  }
+
+  @Get('getStatus/:receiverId')
+  @UseGuards(AuthGuard)
+  async getStatusRequestByUsername(@Param("receiverId") receiverId: string, @Req() req){
+    return await this.friendService.getStatusRequestByUsername(req.user.id,receiverId)
+  }
 }

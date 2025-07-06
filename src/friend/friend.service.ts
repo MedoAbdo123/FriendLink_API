@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Friend, FriendshipStatus } from './schema/friend.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { FriendDto } from './dto/friend.dto';
 import { User } from 'src/user/schema/user.schema';
 import { ChatRoom } from 'src/ChatRoom/schema/chat-room.schema';
@@ -52,7 +52,10 @@ export class FriendService {
   }
 
   async getRequests(user: any) {
-    const requsets = await this.FriendModel.find({ receiverId: user.id })
+    const requsets = await this.FriendModel.find({
+      receiverId: user.id,
+      status: 'pending',
+    })
       .populate('senderId', 'name username email avatar')
       .lean();
     if (requsets.length == 0) {
@@ -126,5 +129,37 @@ export class FriendService {
     }
 
     return findRequest;
+  }
+
+  async getFriends(userId: string) {
+    console.log('User ID', userId);
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new HttpException('Invaild ID', HttpStatus.BAD_REQUEST);
+    }
+    const findeUser = await this.FriendModel.find({
+      $or: [{ receiverId: userId }, { senderId: userId }],
+      status: 'accepted',
+    });
+    return findeUser;
+  }
+
+  async getRequestsPending(user: any) {
+    return await this.FriendModel.find({
+      $or: [{ senderId: user }, { receiverId: user }],
+      status: 'pending',
+    }).populate('receiverId', 'name username avatar');
+  }
+
+  async getStatusRequestByUsername(user: any, receiverId: string) {
+    const status = await this.FriendModel.findOne({
+      $or: [
+        { receiverId: user, senderId: receiverId },
+        { receiverId: receiverId, senderId: user },
+      ],
+    });
+
+    return {
+      status: status || 'none',
+    };
   }
 }

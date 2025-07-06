@@ -1,9 +1,5 @@
 import { UpdateUserDto } from './dto/updateUser.dto';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user.schema';
 import { Model, Types } from 'mongoose';
@@ -11,10 +7,12 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDto } from './dto/registerUser.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/loginUser.dto';
+import { Friend } from 'src/friend/schema/friend.schema';
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(Friend.name) private FriendModel: Model<Friend>,
     private jwtService: JwtService,
   ) {}
 
@@ -52,7 +50,7 @@ export class UserService {
 
     const user = await this.UserModel.create({
       name,
-      username: "@" + username,
+      username: '@' + username,
       email,
       avatar: avatarUrl,
       password: hashPassword,
@@ -163,5 +161,34 @@ export class UserService {
         token,
       },
     };
+  }
+
+  async getAllUsers(currentUserId: string) {
+    const acceptedFriends = await this.FriendModel.find({
+      $or: [
+        { senderId: currentUserId },
+        { receiverId: currentUserId },
+        { status: 'accepted' },
+        { status: 'pending' },
+      ],
+    }).lean();
+
+    const friendIds = acceptedFriends.map((friend) =>
+      friend.senderId.toString() === currentUserId
+        ? friend.receiverId.toString()
+        : friend.senderId.toString(),
+    );
+
+    const allUsers = await this.UserModel.find({
+      _id: { $ne: currentUserId },
+    })
+      .select('name username avatar email')
+      .lean();
+
+    const filteredUsers = allUsers.filter((user) => {
+      return !friendIds.includes(user._id.toString());
+    });
+
+    return filteredUsers;
   }
 }

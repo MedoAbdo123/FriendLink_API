@@ -4,6 +4,7 @@ import { PostController } from './post.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Post, PostSchema } from './schema/post.shema';
 import { Comment, CommentSchema } from 'src/comment/schema/comment.schema';
+import { User, UserSchema } from 'src/user/schema/user.schema';
 
 @Module({
   imports: [
@@ -15,7 +16,11 @@ import { Comment, CommentSchema } from 'src/comment/schema/comment.schema';
       {
         name: Comment.name,
         schema: CommentSchema,
-      }
+      },
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
     ]),
   ],
   controllers: [PostController],

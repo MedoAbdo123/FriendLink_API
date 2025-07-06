@@ -2,10 +2,13 @@ import { UpdateUserDto } from './dto/updateUser.dto';
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -15,6 +18,7 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { LoginUserDto } from './dto/loginUser.dto';
+import { AuthGuard } from 'src/guard/authGuard.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -68,5 +72,11 @@ export class UserController {
       updateUserDto.avatar = file.filename;
     }
     return await this.userService.updateUser(updateUserDto, id);
+  }
+
+  @Get()
+  @UseGuards(AuthGuard)
+  async getAllUsers(@Req() req) {
+    return await this.userService.getAllUsers(req.user.id);
   }
 }

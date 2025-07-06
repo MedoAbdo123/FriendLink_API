@@ -39,7 +39,6 @@ export class CommentService {
       comment: populatedComment,
     };
   }
-  z;
 
   async getComments(postId: string) {
     if (!Types.ObjectId.isValid(postId)) {
@@ -82,26 +81,29 @@ export class CommentService {
       commentId,
       { ...updateCommentDto, edited: 'edited' },
       { new: true },
-    ).populate('user', 'name avatar')
+    ).populate('user', 'name avatar');
 
     return {
       comment: newComment,
     };
   }
 
-  async deletComment(commentId: string, user: any) {
-    const comment = await this.CommentModel.findByIdAndDelete(commentId);
+  async deleteComment(commentId: string, user: any) {
+    const comment = await this.CommentModel.findById(commentId);
+
     if (!comment) {
       throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     }
 
-    if (comment.user.toString() != user.toString()) {
+    if (comment.user.toString() !== user.toString()) {
       throw new HttpException(
         'You do not have the right to delete this comment.',
         HttpStatus.FORBIDDEN,
       );
     }
 
-    return comment;
+    await this.CommentModel.findByIdAndDelete(commentId);
+
+    return { message: 'Comment deleted successfully' };
   }
 }
