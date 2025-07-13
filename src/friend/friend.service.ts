@@ -77,17 +77,17 @@ export class FriendService {
       throw new HttpException('The request has been accepted', 409);
     }
 
+    const roomId = this.generateRoomId(
+      findRequest.senderId.toString(),
+      findRequest.receiverId.toString(),
+    );
+
     const request = await this.FriendModel.findByIdAndUpdate(
       requestId,
       {
         status: FriendshipStatus.ACCEPTED,
       },
       { new: true },
-    );
-
-    const roomId = this.generateRoomId(
-      findRequest.senderId.toString(),
-      findRequest.receiverId.toString(),
     );
 
     const existingRoom = await this.ChatRoomModel.findOne({ roomId });
@@ -131,16 +131,38 @@ export class FriendService {
     return findRequest;
   }
 
-  async getFriends(userId: string) {
-    console.log('User ID', userId);
+  async getFriends(userId: string): Promise<any[]> {
     if (!Types.ObjectId.isValid(userId)) {
-      throw new HttpException('Invaild ID', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Invalid ID', HttpStatus.BAD_REQUEST);
     }
-    const findeUser = await this.FriendModel.find({
+
+    const friendships = await this.FriendModel.find({
       $or: [{ receiverId: userId }, { senderId: userId }],
       status: 'accepted',
-    });
-    return findeUser;
+    })
+      .populate('senderId', 'name avatar')
+      .populate('receiverId', 'name avatar');
+
+    const friends = await Promise.all(friendships.map(async (friendship) => {
+      let friend;
+      if (friendship.senderId._id.toString() === userId) {
+        friend = friendship.receiverId;
+      } else {
+        friend = friendship.senderId;
+      }
+      const sortedIds = [
+        friendship.senderId._id.toString(),
+        friendship.receiverId._id.toString(),
+      ].sort();
+      const roomId = `room_${sortedIds[0]}_${sortedIds[1]}`;
+      const chatRoom = await this.ChatRoomModel.findOne({ roomId });
+      if (!chatRoom) {
+        return { data: friend, roomId: null };
+      }
+      return { data: friend, roomId };
+    }));
+
+    return friends;
   }
 
   async getRequestsPending(user: any) {

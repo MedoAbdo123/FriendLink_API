@@ -14,6 +14,7 @@ import { ChatRoom, ChatRoomSchema } from 'src/ChatRoom/schema/chat-room.schema';
     ]),
   ],
   controllers: [MessagesController],
-  providers: [MessagesService, MessagesGateway],
+  providers: [MessagesService,{provide: MessagesGateway, useClass: MessagesGateway}, MessagesGateway],
+  exports: [MessagesService]
 })
 export class MessagesModule {}

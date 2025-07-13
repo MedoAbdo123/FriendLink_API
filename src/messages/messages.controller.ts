@@ -19,10 +19,14 @@ import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { EditMessageDto } from './dto/editMessage.dto';
+import { MessagesGateway } from './gateway/gateway';
 
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly messagesService: MessagesService,
+    private readonly messagesGateway: MessagesGateway, // ← inject the gateway
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -65,6 +69,11 @@ export class MessagesController {
 
   @Delete(':messageId')
   async deleteMessage(@Param('messageId') messageId: string) {
-    return await this.messagesService.deleteMessage(messageId);
+    const deletedMsg = await this.messagesService.deleteMessage(messageId);
+    // now broadcast to the room that this message was deleted:
+    this.messagesGateway.server
+      .to(deletedMsg.roomId)
+      .emit('messageDeleted', messageId);
+    return { success: true };
   }
 }

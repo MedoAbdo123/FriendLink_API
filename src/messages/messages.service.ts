@@ -6,6 +6,7 @@ import { MessageDto } from './dto/message.dto';
 import { MessagesGateway } from './gateway/gateway';
 import { ChatRoom } from 'src/ChatRoom/schema/chat-room.schema';
 import { EditMessageDto } from './dto/editMessage.dto';
+const ogs = require('open-graph-scraper');
 
 @Injectable()
 export class MessagesService {
@@ -16,24 +17,57 @@ export class MessagesService {
   ) {}
 
   async sendMessage(messageDto: MessageDto, user: any): Promise<Message> {
-    const { roomId, message } = messageDto;
+    const { roomId, message, photo } = messageDto;
 
     const room = await this.ChatRoomModel.findOne({ roomId: roomId });
     if (!room) {
       throw new HttpException('Invalid room id', HttpStatus.NOT_FOUND);
     }
 
-    const findUserId = await this.ChatRoomModel.findOne({
+    const findUserInRoom = await this.ChatRoomModel.findOne({
       participants: user.id,
     });
-    if (!findUserId) {
+    if (!findUserInRoom) {
       throw new HttpException(
         'You are not allowed to send messages in this room.',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const { photo } = messageDto;
+    let linkPreview: {
+      title?: string;
+      description?: string;
+      image?: string;
+      url: string;
+    } | null = null;
+
+    const urlMatch = message?.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      try {
+        const { error, result } = await ogs({
+          url: urlMatch[0],
+          headers: {
+            'user-agent': 'Mozilla/5.0',
+          },
+          timeout: 10000, // عشان لو الصفحة بطيئة
+        });
+        console.log('OGS Result:', result); // ✅ اطبع النتيجة عشان تتأكد
+
+        if (!error && result) {
+          linkPreview = {
+            title: result.ogTitle || '',
+            description: result.ogDescription || '',
+            image: Array.isArray(result.ogImage)
+              ? result.ogImage[0]?.url || ''
+              : result.ogImage?.url || '',
+            url: result.ogUrl || urlMatch[0],
+          };
+        }
+      } catch (err) {
+        console.log('OpenGraph error:', err);
+      }
+    }
+
     let photoUrl: string | undefined;
     if (photo) {
       const baseUrl = 'http://localhost:3000';
@@ -41,15 +75,21 @@ export class MessagesService {
     }
 
     const newMessage = new this.MessageModel({
-      senderId: user.id,
-      roomId: roomId,
-      message: message,
+      senderId: user.id, // تأكد أنه ObjectId أو معرف صحيح
+      roomId,
+      message,
       photo: photoUrl,
+      linkPreview,
     });
 
     const savedMessage = await newMessage.save();
-    this.messagesGateway.emitNewMessage(roomId, savedMessage);
-    return savedMessage;
+    const populatedMessage = await savedMessage.populate(
+      'senderId',
+      'name username avatar',
+    );
+
+    this.messagesGateway.emitNewMessage(roomId, populatedMessage);
+    return populatedMessage;
   }
 
   async getMessage(roomId: string) {
@@ -71,7 +111,7 @@ export class MessagesService {
       messageId,
       editMessageDto,
       { new: true },
-    );
+    ).populate('senderId', 'name username avatar');
     return message;
   }
 
@@ -80,7 +120,7 @@ export class MessagesService {
     if (!message) {
       throw new HttpException('Invalid message id', HttpStatus.NOT_FOUND);
     }
-    await message.deleteOne()
-    return message
+    await message.deleteOne();
+    return message;
   }
 }

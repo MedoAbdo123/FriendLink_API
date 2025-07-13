@@ -14,6 +14,22 @@ export class Message extends Document {
 
   @Prop({ type: String })
   photo?: string;
+
+  @Prop({
+    type: {
+      title: { type: String },
+      description: { type: String },
+      image: { type: String },
+      url: { type: String },
+    },
+    default: null,
+  })
+  linkPreview?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    url: string;
+  } | null;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
