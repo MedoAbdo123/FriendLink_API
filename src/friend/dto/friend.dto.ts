@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Types } from 'mongoose';
 
-import { IsObjectId } from 'src/validators/isObjectId.validator';
+import { IsObjectId } from '../../validators/isObjectId.validator';
 
 export class FriendDto {
   @IsNotEmpty()

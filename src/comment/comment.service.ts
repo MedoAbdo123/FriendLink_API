@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment } from './schema/comment.schema';
 import { Model, Types } from 'mongoose';
-import { Post } from 'src/post/schema/post.shema';
+import { Post } from '../post/schema/post.shema';
 import { CommentDto } from './dto/comment.dto';
 import { UpdateCommentDto } from './dto/updateComment.dto';
 

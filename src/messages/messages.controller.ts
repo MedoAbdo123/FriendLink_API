@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { MessageDto } from './dto/message.dto';
-import { AuthGuard } from 'src/guard/authGuard.guard';
+import { AuthGuard } from '../guard/authGuard.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';

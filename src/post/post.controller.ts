@@ -13,7 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import { AuthGuard } from 'src/guard/authGuard.guard';
+import { AuthGuard } from '../guard/authGuard.guard';
 import { PostDto } from './dto/post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';

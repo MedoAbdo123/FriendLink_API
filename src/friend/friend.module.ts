@@ -3,9 +3,9 @@ import { FriendService } from './friend.service';
 import { FriendController } from './friend.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Friend, FriendSchema } from './schema/friend.schema';
-import { User, UserSchema } from 'src/user/schema/user.schema';
-import { ChatRoom, ChatRoomSchema } from 'src/ChatRoom/schema/chat-room.schema';
-import { Message, MessageSchema } from 'src/messages/schema/messag.schema';
+import { User, UserSchema } from '../user/schema/user.schema';
+import { ChatRoom, ChatRoomSchema } from '../ChatRoom/schema/chat-room.schema';
+import { Message, MessageSchema } from '../messages/schema/messag.schema';
 
 @Module({
   imports: [

@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
-import { AuthGuard } from 'src/guard/authGuard.guard';
-import { UserSchema } from 'src/user/schema/user.schema';
+import { AuthGuard } from '../guard/authGuard.guard';
+import { UserSchema } from '../user/schema/user.schema';
 
 @Controller('friend')
 export class FriendController {

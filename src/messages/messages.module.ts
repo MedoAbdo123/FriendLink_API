@@ -4,7 +4,7 @@ import { MessagesService } from './messages.service';
 import { MessagesController } from './messages.controller';
 import { Message, MessageSchema } from './schema/messag.schema';
 import { MessagesGateway } from './gateway/gateway';
-import { ChatRoom, ChatRoomSchema } from 'src/ChatRoom/schema/chat-room.schema';
+import { ChatRoom, ChatRoomSchema } from '../ChatRoom/schema/chat-room.schema';
 
 @Module({
   imports: [

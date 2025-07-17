@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Message } from './schema/messag.schema';
 import { MessageDto } from './dto/message.dto';
 import { MessagesGateway } from './gateway/gateway';
-import { ChatRoom } from 'src/ChatRoom/schema/chat-room.schema';
+import { ChatRoom } from '../ChatRoom/schema/chat-room.schema';
 import { EditMessageDto } from './dto/editMessage.dto';
 const ogs = require('open-graph-scraper');
 

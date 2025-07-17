@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDto } from './dto/registerUser.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/loginUser.dto';
-import { Friend } from 'src/friend/schema/friend.schema';
+import { Friend } from '../friend/schema/friend.schema';
 @Injectable()
 export class UserService {
   constructor(

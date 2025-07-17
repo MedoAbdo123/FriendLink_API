@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { AuthGuard } from 'src/guard/authGuard.guard';
+import { AuthGuard } from '../guard/authGuard.guard';
 import { CommentDto } from './dto/comment.dto';
 import { UpdateCommentDto } from './dto/updateComment.dto';
 

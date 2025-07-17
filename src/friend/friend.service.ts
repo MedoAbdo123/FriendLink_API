@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Friend, FriendshipStatus } from './schema/friend.schema';
 import { Model, Types } from 'mongoose';
 import { FriendDto } from './dto/friend.dto';
-import { User } from 'src/user/schema/user.schema';
-import { ChatRoom } from 'src/ChatRoom/schema/chat-room.schema';
-import { Message } from 'src/messages/schema/messag.schema';
+import { User } from '../user/schema/user.schema';
+import { ChatRoom } from '../ChatRoom/schema/chat-room.schema';
+import { Message } from '../messages/schema/messag.schema';
 
 @Injectable()
 export class FriendService {

@@ -18,7 +18,7 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { LoginUserDto } from './dto/loginUser.dto';
-import { AuthGuard } from 'src/guard/authGuard.guard';
+import { AuthGuard } from '../guard/authGuard.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
