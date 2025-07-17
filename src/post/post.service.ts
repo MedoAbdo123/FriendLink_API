@@ -61,7 +61,7 @@ export class PostService {
     const { image } = postDto;
     let avatarUrl: string | undefined;
     if (image) {
-      const baseUrl = 'https://friendlink-api.onrender.com/';
+      const baseUrl = 'https://friendlink-api.onrender.com';
       avatarUrl = `${baseUrl}/uploads/${image}`;
     }
     const newPost = await this.PostModel.create({
