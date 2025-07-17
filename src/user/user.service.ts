@@ -42,7 +42,7 @@ export class UserService {
 
     let avatarUrl: string | undefined;
     if (avatar) {
-      const baseUrl = 'http://localhost:3000';
+      const baseUrl = 'https://friendlink-api.onrender.com/';
       avatarUrl = `${baseUrl}/uploads/${avatar}`;
     }
 
@@ -132,7 +132,7 @@ export class UserService {
     const { avatar, name, username, email } = updateUserDto;
     let avatarUrl: string | undefined;
     if (avatar) {
-      const baseUrl = 'http://localhost:3000';
+      const baseUrl = 'https://friendlink-api.onrender.com/';
       avatarUrl = `${baseUrl}/uploads/${avatar}`;
     }
 
