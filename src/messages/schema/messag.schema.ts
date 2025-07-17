@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Message extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   senderId: string;
@@ -14,6 +14,9 @@ export class Message extends Document {
 
   @Prop({ type: String })
   photo?: string;
+
+  @Prop({ default: '' })
+  edited: string;
 
   @Prop({
     type: {
@@ -30,6 +33,8 @@ export class Message extends Document {
     image?: string;
     url: string;
   } | null;
+
+
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

@@ -8,7 +8,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from '../messages.service';
+import { Logger } from '@nestjs/common';
 
+const logger = new Logger('ChatGateway');
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -29,7 +31,7 @@ export class MessagesGateway {
     @MessageBody() roomId: string,
   ) {
     client.join(roomId);
-    console.log(`Client ${client.id} joined room ${roomId}`);
+    logger.log(`Client ${client.id} joined room ${roomId}`);
   }
 
   @SubscribeMessage('sendMessage')
@@ -41,7 +43,7 @@ export class MessagesGateway {
     },
   ) {
     this.server.emit('newMessage', data);
-    console.log(`Message sent to ${data.roomId}: ${data.message}`);
+    logger.log(`Message sent to ${data.roomId}: ${data.message}`);
   }
 
   emitNewMessage(roomId: string, message: any) {

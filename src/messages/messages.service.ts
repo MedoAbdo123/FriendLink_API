@@ -49,9 +49,8 @@ export class MessagesService {
           headers: {
             'user-agent': 'Mozilla/5.0',
           },
-          timeout: 10000, // عشان لو الصفحة بطيئة
+          timeout: 10000,
         });
-        console.log('OGS Result:', result); // ✅ اطبع النتيجة عشان تتأكد
 
         if (!error && result) {
           linkPreview = {
@@ -75,7 +74,7 @@ export class MessagesService {
     }
 
     const newMessage = new this.MessageModel({
-      senderId: user.id, // تأكد أنه ObjectId أو معرف صحيح
+      senderId: user.id,
       roomId,
       message,
       photo: photoUrl,
@@ -109,7 +108,7 @@ export class MessagesService {
   async editMessage(messageId: string, editMessageDto: EditMessageDto) {
     const message = await this.MessageModel.findByIdAndUpdate(
       messageId,
-      editMessageDto,
+    { ...editMessageDto, edited: 'edited' },
       { new: true },
     ).populate('senderId', 'name username avatar');
     return message;

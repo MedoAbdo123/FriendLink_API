@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { FriendDto } from './dto/friend.dto';
 import { User } from 'src/user/schema/user.schema';
 import { ChatRoom } from 'src/ChatRoom/schema/chat-room.schema';
+import { Message } from 'src/messages/schema/messag.schema';
 
 @Injectable()
 export class FriendService {
@@ -12,6 +13,7 @@ export class FriendService {
     @InjectModel(Friend.name) private FriendModel: Model<Friend>,
     @InjectModel(User.name) private UserModel: Model<User>,
     @InjectModel(ChatRoom.name) private ChatRoomModel: Model<ChatRoom>,
+    @InjectModel(Message.name) private MessageModel: Model<Message>,
   ) {}
 
   async sendRequest(friendDto: FriendDto, user: any) {
@@ -143,24 +145,35 @@ export class FriendService {
       .populate('senderId', 'name avatar')
       .populate('receiverId', 'name avatar');
 
-    const friends = await Promise.all(friendships.map(async (friendship) => {
-      let friend;
-      if (friendship.senderId._id.toString() === userId) {
-        friend = friendship.receiverId;
-      } else {
-        friend = friendship.senderId;
-      }
-      const sortedIds = [
-        friendship.senderId._id.toString(),
-        friendship.receiverId._id.toString(),
-      ].sort();
-      const roomId = `room_${sortedIds[0]}_${sortedIds[1]}`;
-      const chatRoom = await this.ChatRoomModel.findOne({ roomId });
-      if (!chatRoom) {
-        return { data: friend, roomId: null };
-      }
-      return { data: friend, roomId };
-    }));
+    const friends = await Promise.all(
+      friendships.map(async (friendship) => {
+        let friend;
+        if (friendship.senderId._id.toString() === userId) {
+          friend = friendship.receiverId;
+        } else {
+          friend = friendship.senderId;
+        }
+
+        const sortedIds = [
+          friendship.senderId._id.toString(),
+          friendship.receiverId._id.toString(),
+        ].sort();
+        const roomId = `room_${sortedIds[0]}_${sortedIds[1]}`;
+
+        const chatRoom = await this.ChatRoomModel.findOne({ roomId });
+
+        // ✅ آخر رسالة
+        const lastMessage = await this.MessageModel.findOne({ roomId })
+          .sort({ createdAt: -1 })
+          .lean();
+
+        return {
+          data: friend,
+          roomId,
+          lastMessage: lastMessage ? lastMessage.message : null,
+        };
+      }),
+    );
 
     return friends;
   }

@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Friend, FriendSchema } from './schema/friend.schema';
 import { User, UserSchema } from 'src/user/schema/user.schema';
 import { ChatRoom, ChatRoomSchema } from 'src/ChatRoom/schema/chat-room.schema';
+import { Message, MessageSchema } from 'src/messages/schema/messag.schema';
 
 @Module({
   imports: [
@@ -20,6 +21,10 @@ import { ChatRoom, ChatRoomSchema } from 'src/ChatRoom/schema/chat-room.schema';
       {
         name: ChatRoom.name,
         schema: ChatRoomSchema,
+      },
+          {
+        name: Message.name,
+        schema: MessageSchema,
       },
     ]),
   ],

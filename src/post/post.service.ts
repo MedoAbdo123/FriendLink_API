@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schema/post.shema';
 import { Model, Types } from 'mongoose';
@@ -17,8 +22,18 @@ dayjs.extend(updateLocale);
 dayjs.updateLocale('en', {
   relativeTime: {
     future: 'in %s',
-    past: '%s ago',
-    s: 'now', // ثواني قليلة
+    past: (input: string) => {
+      const value = parseInt(input);
+      if (input.includes('d')) {
+        if (value >= 7 && value < 30) {
+          const weeks = Math.floor(value / 7);
+          return `${weeks}w ago`;
+        }
+        return `${value}d ago`;
+      }
+      return `${input} ago`;
+    },
+    s: 'now',
     m: '1m',
     mm: '%dm',
     h: '1h',
@@ -31,6 +46,7 @@ dayjs.updateLocale('en', {
     yy: '%dy',
   },
 });
+
 export type PostDocumentWithTimestamps = Post &
   Document & { createdAt: Date; updatedAt: Date };
 
@@ -127,9 +143,11 @@ export class PostService {
       .populate('user', 'name username avatar')
       .lean<PostDocumentWithTimestamps[]>();
 
-    if(postsUser.length == 0) {
-      const userData = await this.UserModel.findOne({username: userId}).select("-password")
-      return userData
+    if (postsUser.length == 0) {
+      const userData = await this.UserModel.findOne({
+        username: userId,
+      }).select('-password');
+      return userData;
     }
 
     const postsWithCommentCount = await Promise.all(
@@ -140,10 +158,11 @@ export class PostService {
 
         const existingCommentIds = existingComments.map((c) =>
           c._id.toString(),
-        )
+        );
 
         return {
           ...postUser,
+          timeAgo: dayjs(postUser.createdAt).fromNow(),
           commentsNumber: existingCommentIds.length,
           comments: existingCommentIds,
         };

@@ -70,7 +70,6 @@ export class MessagesController {
   @Delete(':messageId')
   async deleteMessage(@Param('messageId') messageId: string) {
     const deletedMsg = await this.messagesService.deleteMessage(messageId);
-    // now broadcast to the room that this message was deleted:
     this.messagesGateway.server
       .to(deletedMsg.roomId)
       .emit('messageDeleted', messageId);
