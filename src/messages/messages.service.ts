@@ -69,7 +69,7 @@ export class MessagesService {
 
     let photoUrl: string | undefined;
     if (photo) {
-      const baseUrl = 'https://friendlink-api.onrender.com/';
+      const baseUrl = 'https://friendlink-api.onrender.com';
       photoUrl = `${baseUrl}/uploads/${photo}`;
     }
 
