@@ -8,6 +8,7 @@ import { CommentModule } from './comment/comment.module';
 import { FriendModule } from './friend/friend.module';
 import { ChatRoomModule } from './ChatRoom/chat-room.module';
 import { MessagesModule } from './messages/messages.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { MessagesModule } from './messages/messages.module';
     FriendModule,
     ChatRoomModule,
     MessagesModule,
+    CloudinaryModule
   ],
   controllers: [],
   providers: [],

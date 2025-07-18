@@ -28,26 +28,14 @@ export class PostController {
   @Post('create')
   @UseGuards(AuthGuard)
   @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
-    }),
+    FileInterceptor('image')
   )
-
   async AddPost(
     @Body() postDto: PostDto,
     @Req() req,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (file) {
-      postDto.image = file.filename;
-    }
-    return await this.postService.AddPost(postDto, req.user);
+    return await this.postService.AddPost(postDto, req.user, file);
   }
 
   @Patch('update/:id')

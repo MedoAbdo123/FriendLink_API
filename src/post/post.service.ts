@@ -11,6 +11,7 @@ import { PostDto } from './dto/post.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { Comment } from '../comment/schema/comment.schema';
 import { User } from '../user/schema/user.schema';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 const dayjs = require('dayjs');
 const relativeTime = require('dayjs/plugin/relativeTime');
 const updateLocale = require('dayjs/plugin/updateLocale');
@@ -55,19 +56,18 @@ export class PostService {
     @InjectModel(Post.name) private PostModel: Model<Post>,
     @InjectModel(Comment.name) private CommentModel: Model<Comment>,
     @InjectModel(User.name) private UserModel: Model<User>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async AddPost(postDto: PostDto, user: any) {
-    const { image } = postDto;
-    let avatarUrl: string | undefined;
-    if (image) {
-      const baseUrl = 'https://friendlink-api.onrender.com';
-      avatarUrl = `${baseUrl}/uploads/${image}`;
+  async AddPost(postDto: PostDto, user: any, file?: Express.Multer.File) {
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.cloudinaryService.uploadImage(file);
     }
     const newPost = await this.PostModel.create({
       ...postDto,
       username: user.username,
-      image: avatarUrl,
+      image: imageUrl,
       user: user.id,
     });
     return {

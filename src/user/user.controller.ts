@@ -24,26 +24,12 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar'))
   async createUser(
     @Body() userDto: UserDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (file) {
-      userDto.avatar = file.filename;
-    }
-
-    return await this.userService.registerUser(userDto);
+    return await this.userService.registerUser(userDto, file);
   }
 
   @Post('login')
@@ -53,25 +39,14 @@ export class UserController {
 
   @Patch('update/:id')
   @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
-    }),
+    FileInterceptor('avatar'),
   )
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (file) {
-      updateUserDto.avatar = file.filename;
-    }
-    return await this.userService.updateUser(updateUserDto, id);
+    return await this.userService.updateUser(updateUserDto, id, file);
   }
 
   @Get()

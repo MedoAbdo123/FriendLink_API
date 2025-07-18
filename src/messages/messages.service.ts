@@ -6,6 +6,7 @@ import { MessageDto } from './dto/message.dto';
 import { MessagesGateway } from './gateway/gateway';
 import { ChatRoom } from '../ChatRoom/schema/chat-room.schema';
 import { EditMessageDto } from './dto/editMessage.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 const ogs = require('open-graph-scraper');
 
 @Injectable()
@@ -14,10 +15,15 @@ export class MessagesService {
     @InjectModel(Message.name) private MessageModel: Model<Message>,
     @InjectModel(ChatRoom.name) private ChatRoomModel: Model<ChatRoom>,
     private readonly messagesGateway: MessagesGateway,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async sendMessage(messageDto: MessageDto, user: any): Promise<Message> {
-    const { roomId, message, photo } = messageDto;
+  async sendMessage(
+    messageDto: MessageDto,
+    user: any,
+    file?: Express.Multer.File,
+  ): Promise<Message> {
+    const { roomId, message } = messageDto;
 
     const room = await this.ChatRoomModel.findOne({ roomId: roomId });
     if (!room) {
@@ -68,9 +74,8 @@ export class MessagesService {
     }
 
     let photoUrl: string | undefined;
-    if (photo) {
-      const baseUrl = 'https://friendlink-api.onrender.com';
-      photoUrl = `${baseUrl}/uploads/${photo}`;
+    if (file) {
+      photoUrl = await this.cloudinaryService.uploadImage(file);
     }
 
     const newMessage = new this.MessageModel({
@@ -108,7 +113,7 @@ export class MessagesService {
   async editMessage(messageId: string, editMessageDto: EditMessageDto) {
     const message = await this.MessageModel.findByIdAndUpdate(
       messageId,
-    { ...editMessageDto, edited: 'edited' },
+      { ...editMessageDto, edited: 'edited' },
       { new: true },
     ).populate('senderId', 'name username avatar');
     return message;

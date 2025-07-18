@@ -28,28 +28,15 @@ export class MessagesController {
     private readonly messagesGateway: MessagesGateway, // ← inject the gateway
   ) {}
 
-  @Post()
   @UseGuards(AuthGuard)
-  @UseInterceptors(
-    FileInterceptor('photo', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
-    }),
-  )
-  async sendMessage(
+  @UseInterceptors(FileInterceptor('photo'))
+  @Post()
+  sendMessage(
+    @UploadedFile() file: Express.Multer.File,
     @Body() messageDto: MessageDto,
     @Req() req,
-    @UploadedFile() file: Express.Multer.File,
   ) {
-    if (file) {
-      messageDto.photo = file.filename;
-    }
-    return await this.messagesService.sendMessage(messageDto, req.user);
+    return this.messagesService.sendMessage(messageDto, req.user, file);
   }
 
   @Get(':roomId')
@@ -57,7 +44,7 @@ export class MessagesController {
   async getMessage(@Param('roomId') roomId) {
     return await this.messagesService.getMessage(roomId);
   }
-
+  
   @Patch(':messageId')
   @UseGuards(AuthGuard)
   async updateMessage(

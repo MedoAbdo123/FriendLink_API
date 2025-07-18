@@ -8,15 +8,17 @@ import { UserDto } from './dto/registerUser.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { Friend } from '../friend/schema/friend.schema';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
     @InjectModel(Friend.name) private FriendModel: Model<Friend>,
     private jwtService: JwtService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
-  async registerUser(userDto: UserDto) {
+  async registerUser(userDto: UserDto, file?: Express.Multer.File) {
     const { name, username, email, avatar, password } = userDto;
     const findUser = await this.UserModel.findOne({ email });
 
@@ -41,9 +43,8 @@ export class UserService {
     }
 
     let avatarUrl: string | undefined;
-    if (avatar) {
-      const baseUrl = 'https://friendlink-api.onrender.com';
-      avatarUrl = `${baseUrl}/uploads/${avatar}`;
+    if (file) {
+      avatarUrl = await this.cloudinaryService.uploadImage(file);
     }
 
     const hashPassword = await bcrypt.hash(password, 12);
@@ -124,16 +125,15 @@ export class UserService {
     };
   }
 
-  async updateUser(updateUserDto: UpdateUserDto, id: string) {
+  async updateUser(updateUserDto: UpdateUserDto, id: string, file?: Express.Multer.File) {
     if (!Types.ObjectId.isValid(id)) {
       throw new HttpException('User Not fund', HttpStatus.NOT_FOUND);
     }
 
-    const { avatar, name, username, email } = updateUserDto;
+    const { name, username, email } = updateUserDto;
     let avatarUrl: string | undefined;
-    if (avatar) {
-      const baseUrl = 'https://friendlink-api.onrender.com';
-      avatarUrl = `${baseUrl}/uploads/${avatar}`;
+    if (file) {
+      avatarUrl = await this.cloudinaryService.uploadImage(file)
     }
 
     const user = await this.UserModel.findByIdAndUpdate(
