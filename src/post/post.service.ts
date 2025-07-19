@@ -135,41 +135,48 @@ export class PostService {
     };
   }
 
-  async findPostByUsernameOrUserId(userId: string) {
-    const postsUser = await this.PostModel.find({
-      $or: [{ username: userId }, { user: userId }],
+async findPostByUsernameOrUserId(userId: string) {
+  const postsUser = await this.PostModel.find()
+    .populate({
+      path: 'user',
+      select: 'name username avatar',
+      match: { username: userId },
     })
-      .populate('user', 'name username avatar')
-      .lean<PostDocumentWithTimestamps[]>();
+    .lean<PostDocumentWithTimestamps[]>();
 
-    if (postsUser.length == 0) {
-      const userData = await this.UserModel.findOne({
-        username: userId,
-      }).select('-password');
-      return userData;
-    }
+  const filteredPosts = postsUser.filter(p => p.user !== null);
 
-    const postsWithCommentCount = await Promise.all(
-      postsUser.map(async (postUser) => {
-        const existingComments = await this.CommentModel.find({
-          _id: { $in: postUser.comments },
-        }).select('_id');
+  console.log(`Posts for userId ${userId}:`, filteredPosts);
 
-        const existingCommentIds = existingComments.map((c) =>
-          c._id.toString(),
-        );
-
-        return {
-          ...postUser,
-          timeAgo: dayjs(postUser.createdAt).fromNow(),
-          commentsNumber: existingCommentIds.length,
-          comments: existingCommentIds,
-        };
-      }),
-    );
-
-    return postsWithCommentCount;
+  if (filteredPosts.length === 0) {
+    const userData = await this.UserModel.findOne({
+      username: userId,
+    }).select('-password');
+    return userData;
   }
+
+  const postsWithCommentCount = await Promise.all(
+    filteredPosts.map(async (postUser) => {
+      const existingComments = await this.CommentModel.find({
+        _id: { $in: postUser.comments },
+      }).select('_id');
+
+      const existingCommentIds = existingComments.map((c) =>
+        c._id.toString(),
+      );
+
+      return {
+        ...postUser,
+        timeAgo: dayjs(postUser.createdAt).fromNow(),
+        commentsNumber: existingCommentIds.length,
+        comments: existingCommentIds,
+      };
+    }),
+  );
+
+  return postsWithCommentCount;
+}
+
 
   async likeAndDisLike(postId: string, user: any) {
     const post = await this.PostModel.findById(postId);
