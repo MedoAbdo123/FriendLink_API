@@ -1,3 +1,4 @@
+import { AuthGuard } from './../guard/authGuard.guard';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import {
   Body,
@@ -14,11 +15,7 @@ import {
 import { UserService } from './user.service';
 import { UserDto } from './dto/registerUser.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { LoginUserDto } from './dto/loginUser.dto';
-import { AuthGuard } from '../guard/authGuard.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
