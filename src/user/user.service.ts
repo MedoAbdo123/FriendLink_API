@@ -51,7 +51,7 @@ export class UserService {
 
     const user = await this.UserModel.create({
       name,
-      username: '@' + username,
+      username: `@${username}`,
       email,
       avatar: avatarUrl,
       password: hashPassword,
@@ -60,7 +60,7 @@ export class UserService {
     const token = await this.jwtService.sign({
       id: user._id,
       name,
-      username,
+      username: `@${username}`,
       email,
       avatar:
         !avatar || avatar === ''
@@ -105,7 +105,7 @@ export class UserService {
     const token = await this.jwtService.sign({
       id: user._id,
       name: user.name,
-      username: user.username,
+      username: `@${user.username}`,
       email: user.email,
       avatar: user.avatar,
     });
@@ -149,7 +149,7 @@ export class UserService {
     const token = this.jwtService.sign({
       id: user._id,
       name: user.name,
-      username: user.username,
+      username: `@${user.username}`,
       email: user.email,
       avatar: user.avatar,
     });
