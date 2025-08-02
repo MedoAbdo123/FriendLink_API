@@ -162,7 +162,6 @@ export class FriendService {
 
         const chatRoom = await this.ChatRoomModel.findOne({ roomId });
 
-        // ✅ آخر رسالة
         const lastMessage = await this.MessageModel.findOne({ roomId })
           .sort({ createdAt: -1 })
           .lean();

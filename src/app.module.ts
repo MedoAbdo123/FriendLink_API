@@ -15,7 +15,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(`${process.env.MONGO_URI}`),
+    MongooseModule.forRoot(`${process.env.MONGO_URL}`),
     UserModule,
     JwtModule.register({
       global: true,

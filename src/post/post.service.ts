@@ -24,13 +24,19 @@ dayjs.updateLocale('en', {
     future: 'in %s',
     past: (input: string) => {
       const value = parseInt(input);
-      if (input.includes('d')) {
-        if (value >= 7 && value < 30) {
-          const weeks = Math.floor(value / 7);
-          return `${weeks}w ago`;
+
+      // لما يكون input في شكل "7d" أو "10d"
+      if (input.includes('d') || input.includes('day')) {
+        if (!isNaN(value)) {
+          if (value >= 7 && value < 30) {
+            const weeks = Math.floor(value / 7);
+            return `${weeks}w ago`;
+          }
+          return `${value}d ago`;
         }
-        return `${value}d ago`;
       }
+
+      // باقي الحالات ترجع بشكل عادي
       return `${input} ago`;
     },
     s: 'now',
@@ -46,6 +52,7 @@ dayjs.updateLocale('en', {
     yy: '%dy',
   },
 });
+
 
 export type PostDocumentWithTimestamps = Post &
   Document & { createdAt: Date; updatedAt: Date };
